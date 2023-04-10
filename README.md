@@ -2,91 +2,42 @@
 
 
 
-## Getting started
+## What?
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+This is a simple python script to send base OS data to stats collector. It also pulls stats from nginx-rtmp-module's XML if the current machine is ingest node, based on the node hostname.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+## Dependencies
 
 ```
-cd existing_repo
-git remote add origin https://git.egov.bg/meu/videonabludenie/3-01.03.2023/vigil.git
-git branch -M main
-git push -uf origin main
+sudo apt install python3-psutil python3-xmltodict
 ```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://git.egov.bg/meu/videonabludenie/3-01.03.2023/vigil/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
 
 ## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Cron it like this:
+```
+./vigil.py | curl -k -H "Content-Type: application/json" -X POST --data-binary @- https://api
+```
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+## Example result
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+### Only basic data
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+```
+{"hostname": "osi", "timestamp": 1679821063, "load": [0.68, 0.69, 0.65], "cpu_percent": [8.5, 8.62, 8.12], "mem_percent_used": 66.0, "disk_usage": {"/": 98.3, "/home": 98.3, "/media/veracrypt1": 93.6, "/media/veracrypt2": 92.5, "/media/veracrypt3": 96.2}, "perf": {"net_sent": "42.4B/s", "net_recv": "13.2B/s", "io_read": "0.0B/s", "io_write": "3.4M/s"}}
+```
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+### Ingest node with zero streams
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+```
+{"hostname": "osi", "timestamp": 1679821129, "load": [1.38, 0.92, 0.73], "cpu_percent": [17.25, 11.5, 9.12], "mem_percent_used": 66.3, "disk_usage": {"/": 98.3, "/home": 98.3, "/media/veracrypt1": 93.6, "/media/veracrypt2": 92.5, "/media/veracrypt3": 96.2}, "perf": {"net_sent": "7.0K/s", "net_recv": "11.0K/s", "io_read": "0.0B/s", "io_write": "0.0B/s"}, "rtmp_stats": {"rtmp": {"nginx_version": "1.21.4", "nginx_rtmp_version": "1.1.4", "built": "Jul 12 2022 04:07:30", "pid": "1318194", "uptime": "405199", "naccepted": "9", "bw_in": "0", "bytes_in": "52738530", "bw_out": "0", "bytes_out": "3681", "server": {"application": [{"name": "test-setup", "live": {"nclients": "0"}}, {"name": "test-sik", "live": {"nclients": "0"}}, {"name": "real", "live": {"nclients": "0"}}]}}}}
+```
+
+### Ingest node with one stream
+
+```
+{"hostname": "osi", "timestamp": 1679821231, "load": [0.78, 0.82, 0.72], "cpu_percent": [9.75, 10.25, 9.0], "mem_percent_used": 66.3, "disk_usage": {"/": 98.3, "/home": 98.3, "/media/veracrypt1": 93.6, "/media/veracrypt2": 92.5, "/media/veracrypt3": 96.2}, "perf": {"net_sent": "345.8B/s", "net_recv": "309.6B/s", "io_read": "0.0B/s", "io_write": "56.0K/s"}, "rtmp_stats": {"rtmp": {"nginx_version": "1.21.4", "nginx_rtmp_version": "1.1.4", "built": "Jul 12 2022 04:07:30", "pid": "1318194", "uptime": "405302", "naccepted": "10", "bw_in": "1208816", "bytes_in": "55283160", "bw_out": "320", "bytes_out": "4090", "server": {"application": [{"name": "test-setup", "live": {"nclients": "0"}}, {"name": "test-sik", "live": {"nclients": "0"}}, {"name": "real", "live": {"stream": {"name": "010100003", "time": "16192", "bw_in": "1203504", "bytes_in": "2535387", "bw_out": "0", "bytes_out": "0", "bw_audio": "61240", "bw_video": "1142264", "client": {"id": "5049478", "address": "37.63.23.227", "time": "16440", "flashver": "FMLE/3.0 (compatible; SIK-Strea", "dropped": "0", "avsync": "7", "timestamp": "17960", "publishing": null, "active": null}, "meta": {"video": {"width": "1280", "height": "720", "frame_rate": "0", "codec": "H264", "profile": "Main", "compat": "192", "level": "4.2"}, "audio": {"codec": "AAC", "profile": "LC", "channels": "1", "sample_rate": "44100"}}, "nclients": "1", "publishing": null, "active": null}, "nclients": "1"}}]}}}}
+```
 
 ## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+MIT
